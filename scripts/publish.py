@@ -160,6 +160,7 @@ def ensure_publisher_key(author):
     # Auto-save to .env
     env_file = find_env_file()
     try:
+        written = False
         if env_file.exists():
             content = env_file.read_text()
             # Check for an uncommented, non-empty PUBLISHER_KEY line
@@ -168,16 +169,21 @@ def ensure_publisher_key(author):
                 for line in content.splitlines()
             )
             if not has_active_key:
+                suffix = "" if content.endswith("\n") else "\n"
                 with open(env_file, "a") as f:
-                    f.write(f"\nPUBLISHER_KEY={new_key}\n")
+                    f.write(f"{suffix}PUBLISHER_KEY={new_key}\n")
+                written = True
         else:
             with open(env_file, "w") as f:
                 f.write(f"PUBLISHER_KEY={new_key}\n")
-        print(f"Auto-registered publisher key for author '{author}' → saved to {env_file}", file=sys.stderr)
+            written = True
+        if written:
+            print(f"Publisher key for '{author}' saved to {env_file}", file=sys.stderr)
+        else:
+            print(f"WARNING: .env already has a PUBLISHER_KEY — new key NOT saved. Add manually: PUBLISHER_KEY={new_key}", file=sys.stderr)
     except OSError as e:
         print(f"WARNING: could not save key to {env_file}: {e}", file=sys.stderr)
-        print(f"Please manually add to your .env: PUBLISHER_KEY=****{new_key[-4:]}", file=sys.stderr)
-        print(f"(Full key was printed above at registration time)", file=sys.stderr)
+        print(f"Please manually add to your .env: PUBLISHER_KEY={new_key}", file=sys.stderr)
 
     # Also set in current process so it's available for the RPC call
     os.environ["PUBLISHER_KEY"] = new_key

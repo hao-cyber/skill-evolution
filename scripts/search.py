@@ -91,7 +91,7 @@ def semantic_search(query, limit=10, audited_only=True, tag=None):
     rpc_payload = {
         "query_embedding": embedding,
         "match_count": limit,
-        "match_threshold": 0.5,
+        "match_threshold": 0.6,
     }
     results = supabase_rpc("match_skills", rpc_payload, exit_on_error=False)
     if results is None:

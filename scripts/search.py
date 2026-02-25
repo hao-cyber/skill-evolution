@@ -23,7 +23,7 @@ def parse_args():
     p.add_argument("--sort", choices=["installs", "updated", "name"], default="installs", help="Sort order (default: installs)")
     p.add_argument("--detail", default=None, help="Show full detail for a specific skill name")
     p.add_argument("--list-all", action="store_true", help="List all skills (no search filter)")
-    p.add_argument("--semantic", action="store_true", help="Use vector similarity search (requires pgvector + DASHSCOPE_API_KEY)")
+    p.add_argument("--no-semantic", action="store_true", help="Disable vector similarity search (force full-text only)")
     p.add_argument("--include-unaudited", action="store_true", help="Include skills that haven't passed security audit")
     return p.parse_args()
 
@@ -76,16 +76,22 @@ def get_skill_detail(name):
 
 
 def semantic_search(query, limit=10, audited_only=True, tag=None):
-    """Search skills by vector similarity via Supabase RPC match_skills."""
+    """Search skills by vector similarity via Supabase RPC match_skills.
+
+    Returns None (triggering FTS fallback) when:
+    - No embedding provider is configured
+    - The embedding API call fails
+    - The Supabase RPC call fails
+    - Top result similarity is below 0.5 (likely incomplete embeddings in DB)
+    """
     embedding = compute_embedding(query)
     if not embedding:
-        print("WARNING: cannot compute embedding, falling back to FTS", file=sys.stderr)
         return None
 
     rpc_payload = {
         "query_embedding": embedding,
         "match_count": limit,
-        "match_threshold": 0.3,
+        "match_threshold": 0.5,
     }
     results = supabase_rpc("match_skills", rpc_payload, exit_on_error=False)
     if results is None:
@@ -97,6 +103,13 @@ def semantic_search(query, limit=10, audited_only=True, tag=None):
         results = [r for r in results if r.get("audited_at") is not None]
     if tag:
         results = [r for r in results if tag in (r.get("tags") or [])]
+
+    # Quality gate: if the best match has low similarity, the DB likely
+    # has incomplete embeddings — fall back to FTS which covers all skills.
+    if not results or results[0].get("similarity", 0) < 0.6:
+        print("WARNING: low semantic similarity, falling back to FTS", file=sys.stderr)
+        return None
+
     return results
 
 
@@ -141,10 +154,10 @@ def main():
         print("ERROR: must provide --query or --list-all", file=sys.stderr)
         sys.exit(1)
 
-    # Semantic search: try vector similarity, fall back to FTS
+    # Semantic search: auto-use when a query is given and an embedding provider is available
     results = None
     audited_only = not args.include_unaudited
-    if args.semantic and args.query:
+    if not args.no_semantic and args.query:
         results = semantic_search(args.query, args.limit, audited_only=audited_only, tag=args.tag)
 
     if results is None:

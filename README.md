@@ -131,8 +131,8 @@ Features: YAML frontmatter parsing, file_tree collection, depends_on extraction,
 Searches the registry.
 
 ```
---query KEYWORDS     Full-text search (English and CJK)
---semantic           Vector similarity search (requires DASHSCOPE_API_KEY)
+--query KEYWORDS     Search (auto-uses semantic search when an embedding key is configured)
+--no-semantic        Force full-text only (skip vector similarity)
 --tag TAG            Filter by tag
 --sort ORDER         Sort by: installs (default), updated, name
 --limit N            Max results (default: 10)
@@ -141,6 +141,8 @@ Searches the registry.
 --list-all           List everything
 --include-unaudited  Include skills that haven't passed security audit
 ```
+
+Semantic search is auto-enabled when any embedding API key is configured (`DASHSCOPE_API_KEY`, `SILICONFLOW_API_KEY`, or `OPENAI_API_KEY`). Without a key, search falls back to full-text — still works fine.
 
 ### install.py
 

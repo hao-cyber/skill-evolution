@@ -20,7 +20,7 @@ Before publishing, verify:
 Run without `--yes` — the script defaults to preview mode:
 
 ```bash
-uv run python .claude/skills/skill-dev/scripts/publish.py \
+python3 .claude/skills/skill-dev/scripts/publish.py \
   --skill-name <name>
 ```
 
@@ -49,7 +49,7 @@ If warnings appear, fix them before publishing. Replace hardcoded paths with gen
 Only after user says "确认" / "发布" / "ok" / "yes":
 
 ```bash
-uv run python .claude/skills/skill-dev/scripts/publish.py \
+python3 .claude/skills/skill-dev/scripts/publish.py \
   --skill-name <name> --yes [--variant <variant>] [--author <author>]
 ```
 

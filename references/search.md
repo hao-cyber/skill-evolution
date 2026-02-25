@@ -11,7 +11,7 @@
 ### 1. Search Registry
 
 ```bash
-uv run python .claude/skills/skill-dev/scripts/search.py \
+python3 .claude/skills/skill-dev/scripts/search.py \
   --query "<keywords>" [--tag <tag>] [--limit 10]
 ```
 
@@ -22,7 +22,7 @@ Output: grouped by skill name, showing variants, installs, description.
 For a specific skill:
 
 ```bash
-uv run python .claude/skills/skill-dev/scripts/search.py \
+python3 .claude/skills/skill-dev/scripts/search.py \
   --detail <skill-name>
 ```
 
@@ -49,7 +49,7 @@ When multiple variants exist, use this decision tree:
 ### 1. Install
 
 ```bash
-uv run python .claude/skills/skill-dev/scripts/install.py \
+python3 .claude/skills/skill-dev/scripts/install.py \
   --name <skill-name> [--variant <variant>] [--force]
 ```
 

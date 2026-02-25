@@ -8,8 +8,8 @@ Not another skill marketplace. This is the engine that makes skills on *any* mar
 
 - [Claude Code](https://claude.ai/code) (or any AI coding agent that supports `.claude/skills/`)
 - Python 3.9+
-- [uv](https://docs.astral.sh/uv/) (Python package manager, used in script examples)
-- [PyYAML](https://pypi.org/project/PyYAML/) (`uv pip install pyyaml` — needed by publish.py)
+
+No pip packages required. All scripts use Python standard library only.
 
 ## Quick Start
 
@@ -42,15 +42,15 @@ No `.env`, no accounts, no setup. The public registry is built in.
 
 ```bash
 # Search
-uv run python .claude/skills/skill-dev/scripts/search.py --query "web scraper"
+python3 .claude/skills/skill-dev/scripts/search.py --query "web scraper"
 
 # Install (dependencies auto-installed)
-uv run python .claude/skills/skill-dev/scripts/install.py --name web-read
+python3 .claude/skills/skill-dev/scripts/install.py --name web-read
 
 # Publish (preview first, then --yes to confirm)
 # Publisher identity is auto-generated on first publish.
-uv run python .claude/skills/skill-dev/scripts/publish.py --skill-name my-skill
-uv run python .claude/skills/skill-dev/scripts/publish.py --skill-name my-skill --yes
+python3 .claude/skills/skill-dev/scripts/publish.py --skill-name my-skill
+python3 .claude/skills/skill-dev/scripts/publish.py --skill-name my-skill --yes
 ```
 
 ### (Advanced) Private registry

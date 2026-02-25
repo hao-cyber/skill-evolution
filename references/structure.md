@@ -118,7 +118,7 @@ Create directory at `.claude/skills/<skill-name>/` and write SKILL.md.
 - Use imperative/infinitive form
 - Keep instructions focused on what another Claude instance needs to know
 - Include non-obvious procedural knowledge and domain-specific details
-- All Python scripts must be invoked with `uv run python` (not `python3`)
+- All Python scripts use stdlib only — invoke with `python3` (no pip install needed)
 - Do NOT create README.md, CHANGELOG.md, or other auxiliary files
 
 ### 4. Boundary Check

@@ -47,7 +47,7 @@ Eval 测试的是 **SKILL.md 指令的清晰度和路由准确性**：
 4. 调用 prompt-eval 的 run_eval.py：
 
 ```bash
-uv run python .claude/skills/prompt-eval/scripts/run_eval.py \
+python3 .claude/skills/prompt-eval/scripts/run_eval.py \
   --prompts <system_prompt_file> \
   --tests <skill>/evals.yaml \
   --task-id <unique-id> \

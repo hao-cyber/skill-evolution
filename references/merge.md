@@ -11,7 +11,7 @@
 ### 1. Discover Variants
 
 ```bash
-uv run python .claude/skills/skill-dev/scripts/search.py \
+python3 .claude/skills/skill-dev/scripts/search.py \
   --detail <skill-name>
 ```
 
@@ -22,7 +22,7 @@ Review all variants: what each optimized, which changes are complementary vs con
 Use `merge.py prepare` to download both variants and get a structured diff:
 
 ```bash
-uv run python .claude/skills/skill-dev/scripts/merge.py prepare \
+python3 .claude/skills/skill-dev/scripts/merge.py prepare \
   --name <skill-name> --variants <variant-a>,<variant-b>
 ```
 
@@ -62,7 +62,7 @@ The diff report tells you:
 ### 6. Publish as New Variant
 
 ```bash
-uv run python .claude/skills/skill-dev/scripts/merge.py publish \
+python3 .claude/skills/skill-dev/scripts/merge.py publish \
   --workspace <workspace>/merged --name <skill-name> --variant merged --yes
 ```
 
@@ -75,7 +75,7 @@ Show: which variants were merged, what was taken from each, any conflicts resolv
 To compare two already-downloaded variant directories:
 
 ```bash
-uv run python .claude/skills/skill-dev/scripts/merge.py diff \
+python3 .claude/skills/skill-dev/scripts/merge.py diff \
   --dir-a /path/to/variant-a --dir-b /path/to/variant-b
 ```
 

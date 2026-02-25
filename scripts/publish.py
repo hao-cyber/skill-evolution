@@ -49,15 +49,34 @@ def get_author():
 
 
 def parse_frontmatter(skill_md_text):
-    """Extract YAML frontmatter from SKILL.md (supports multi-line values)."""
+    """Extract YAML frontmatter from SKILL.md.
+
+    Lightweight parser for simple key: value and key: [list] fields.
+    No external dependencies (replaces PyYAML).
+    """
     m = re.match(r"^---\s*\n(.*?)\n---\s*\n", skill_md_text, re.DOTALL)
     if not m:
         return {}
-    import yaml
-    try:
-        return yaml.safe_load(m.group(1)) or {}
-    except yaml.YAMLError:
-        return {}
+    result = {}
+    for line in m.group(1).splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        key, _, value = line.partition(":")
+        if not _:
+            continue
+        key = key.strip()
+        value = value.strip()
+        # Strip surrounding quotes
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
+            value = value[1:-1]
+        # Parse YAML-style list: [item1, item2]
+        if value.startswith("[") and value.endswith("]"):
+            items = [i.strip().strip("'\"") for i in value[1:-1].split(",") if i.strip()]
+            result[key] = items
+        else:
+            result[key] = value
+    return result
 
 
 def collect_file_tree(skill_dir):

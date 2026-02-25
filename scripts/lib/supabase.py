@@ -16,20 +16,20 @@ def _ssl_context():
     Handles macOS where Python's default OpenSSL often can't find system CAs.
     Falls back to certifi if installed, then to unverified context as last resort.
     """
+    # 1. Try system default — works on most Linux and properly configured macOS
     ctx = ssl.create_default_context()
-    try:
-        # Quick check: can we reach any HTTPS at all?
-        urllib.request.urlopen("https://example.com", context=ctx, timeout=5)
+    if ctx.get_ca_certs():
         return ctx
-    except (urllib.error.URLError, OSError):
-        pass
-    # Try certifi bundle (pip install certifi)
+    # 2. Try certifi bundle (common fix for macOS: pip install certifi)
     try:
         import certifi
         return ssl.create_default_context(cafile=certifi.where())
     except ImportError:
         pass
-    # Last resort: disable verification (still encrypted, just no cert check)
+    # 3. Last resort: skip verification (still TLS-encrypted, no cert check).
+    #    Print a warning so users know to install certifi for proper security.
+    print("WARNING: SSL CA certificates not found; connections will skip certificate verification. "
+          "Run 'pip install certifi' to fix.", file=sys.stderr)
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE

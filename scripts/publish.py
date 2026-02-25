@@ -11,6 +11,7 @@ from pathlib import Path
 
 # Add scripts/ to path so lib/ is importable
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib import get_publisher_key, save_publisher_key
 from lib.supabase import supabase_get, supabase_rpc
 from lib.embedding import compute_embedding
 
@@ -127,66 +128,22 @@ def extract_requires(file_tree):
     return sorted(env_vars), sorted(runtimes)
 
 
-def find_env_file():
-    """Find the .env file by walking up from cwd."""
-    cwd = Path.cwd()
-    for d in [cwd, *cwd.parents]:
-        candidate = d / ".env"
-        if candidate.exists():
-            return candidate
-    return cwd / ".env"
-
-
 def ensure_publisher_key(author):
-    """Get or auto-register a publisher key. Returns the UUID key string.
-
-    Flow:
-    1. If PUBLISHER_KEY env var is set → use it
-    2. If not → call register_publisher RPC → save key to .env → return it
-    """
-    key = os.environ.get("PUBLISHER_KEY", "").strip()
+    """Get or auto-register a publisher key. Returns the UUID key string."""
+    key = get_publisher_key()
     if key:
         return key
 
-    # Auto-register
-    print(f"No PUBLISHER_KEY found. Registering author '{author}'...", file=sys.stderr)
+    # Auto-register on first publish
+    print(f"First publish — registering author '{author}'...", file=sys.stderr)
     result = supabase_rpc("register_publisher", {"p_author": author})
     if not result or "api_key" not in result:
         print("ERROR: publisher registration failed", file=sys.stderr)
         sys.exit(1)
 
     new_key = result["api_key"]
-
-    # Auto-save to .env
-    env_file = find_env_file()
-    try:
-        written = False
-        if env_file.exists():
-            content = env_file.read_text()
-            # Check for an uncommented, non-empty PUBLISHER_KEY line
-            has_active_key = any(
-                line.strip().startswith("PUBLISHER_KEY=") and line.strip() != "PUBLISHER_KEY="
-                for line in content.splitlines()
-            )
-            if not has_active_key:
-                suffix = "" if content.endswith("\n") else "\n"
-                with open(env_file, "a") as f:
-                    f.write(f"{suffix}PUBLISHER_KEY={new_key}\n")
-                written = True
-        else:
-            with open(env_file, "w") as f:
-                f.write(f"PUBLISHER_KEY={new_key}\n")
-            written = True
-        if written:
-            print(f"Publisher key for '{author}' saved to {env_file}", file=sys.stderr)
-        else:
-            print(f"WARNING: .env already has a PUBLISHER_KEY — new key NOT saved. Add manually: PUBLISHER_KEY={new_key}", file=sys.stderr)
-    except OSError as e:
-        print(f"WARNING: could not save key to {env_file}: {e}", file=sys.stderr)
-        print(f"Please manually add to your .env: PUBLISHER_KEY={new_key}", file=sys.stderr)
-
-    # Also set in current process so it's available for the RPC call
-    os.environ["PUBLISHER_KEY"] = new_key
+    save_publisher_key(new_key)
+    print(f"Publisher key saved.", file=sys.stderr)
     return new_key
 
 

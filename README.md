@@ -36,15 +36,9 @@ your-project/
 
 **Done.** Claude Code will pick up skill-dev and can now create, fix, and manage skills locally.
 
-### 2. Connect to the public registry
+### 2. Use the registry (zero config)
 
-The public skill registry is pre-configured — copy the env file and you're ready to search, install, and publish:
-
-```bash
-cp .claude/skills/skill-dev/.env.example .env
-```
-
-That's it. No Supabase account needed. The registry URL and key are already filled in.
+No `.env`, no accounts, no setup. The public registry is built in.
 
 ```bash
 # Search
@@ -53,22 +47,31 @@ uv run python .claude/skills/skill-dev/scripts/search.py --query "web scraper"
 # Install (dependencies auto-installed)
 uv run python .claude/skills/skill-dev/scripts/install.py --name web-read
 
-# Publish (two-step: preview first, then --yes to confirm)
+# Publish (preview first, then --yes to confirm)
+# Publisher identity is auto-generated on first publish.
 uv run python .claude/skills/skill-dev/scripts/publish.py --skill-name my-skill
 uv run python .claude/skills/skill-dev/scripts/publish.py --skill-name my-skill --yes
 ```
 
-Even without `.env`, search and install still work — the public registry is the built-in default.
+### (Optional) Semantic search
 
-### (Advanced) Run a private registry
+Full-text search works out of the box. For vector similarity search, set any one of these:
 
-If you want a separate, private registry for your team:
+```bash
+export DASHSCOPE_API_KEY=...   # Alibaba Cloud
+export SILICONFLOW_API_KEY=... # SiliconFlow (free tier)
+export OPENAI_API_KEY=...      # OpenAI
+```
+
+### (Advanced) Private registry
+
+To run a separate registry for your team:
 
 **a.** Create a free [Supabase](https://supabase.com) project
 
 **b.** Run `setup.sql` in the Supabase SQL Editor
 
-**c.** Override `SUPABASE_URL` and `SUPABASE_ANON_KEY` in your `.env`
+**c.** Set `SUPABASE_URL` and `SUPABASE_ANON_KEY` env vars to override the public defaults
 
 ## What Works Offline
 
@@ -180,7 +183,7 @@ Features: fetch both variants, structured diff report (complementary/conflicting
 
 ### review.py
 
-Submit and view skill reviews. Requires `PUBLISHER_KEY` for submit (prevents anonymous spam).
+Submit and view skill reviews. Publisher identity is auto-managed (prevents anonymous spam).
 
 ```
 review.py submit --skill-name NAME --score 1-5 [--review "text"] [--context "context"] [--reviewer ID] [--variant base]

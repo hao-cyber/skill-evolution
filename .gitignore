@@ -1,4 +1,5 @@
 .env
+.publisher_key
 supabase/
 __pycache__/
 *.pyc

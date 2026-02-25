@@ -10,6 +10,7 @@ from pathlib import Path
 
 # Add scripts/ to path so lib/ is importable
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib import get_publisher_key
 from lib.supabase import supabase_get, supabase_rpc
 
 
@@ -52,9 +53,9 @@ def get_skill_id(name, variant="base"):
 
 def cmd_submit(args):
     skill_id = get_skill_id(args.skill_name, args.variant)
-    publisher_key = os.environ.get("PUBLISHER_KEY", "").strip()
+    publisher_key = get_publisher_key()
     if not publisher_key:
-        print("ERROR: PUBLISHER_KEY required to submit reviews — publish a skill first to register", file=sys.stderr)
+        print("ERROR: publisher key required — publish a skill first to register", file=sys.stderr)
         sys.exit(1)
     result = supabase_rpc("submit_review", {
         "p_skill_id": skill_id,

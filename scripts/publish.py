@@ -13,7 +13,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import get_publisher_key, save_publisher_key
 from lib.supabase import supabase_get, supabase_rpc
-from lib.embedding import compute_embedding
 
 
 def parse_args():
@@ -228,12 +227,6 @@ def main():
         "depends_on": fm.get("depends_on", []) or [],
     }
 
-    # Compute embedding (best-effort — ignored if column doesn't exist in DB yet)
-    embed_text = f"{name} {description} {' '.join(tags)}"
-    embedding = compute_embedding(embed_text)
-    if embedding:
-        payload["embedding"] = embedding
-
     # Default: show preview. Require --yes to actually publish.
     preview = {
         "name": name,
@@ -248,7 +241,6 @@ def main():
         "requires_runtime": requires_runtime,
         "depends_on": fm.get("depends_on", []) or [],
         "sanitize_warnings": warnings,
-        "has_embedding": embedding is not None,
     }
 
     if not args.yes:
@@ -293,8 +285,6 @@ def main():
     }
     if parent_id:
         rpc_params["p_parent_id"] = parent_id
-    if embedding:
-        rpc_params["p_embedding"] = embedding
 
     # Publish via server-side RPC (uses anon key, no service key needed)
     result = supabase_rpc("publish_skill", rpc_params) or {}

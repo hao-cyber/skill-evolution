@@ -24,7 +24,7 @@ uv run python .claude/skills/skill-dev/scripts/publish.py \
   --skill-name <name>
 ```
 
-Show the user: name, variant, file count, tags, sanitize warnings, embedding status.
+Show the user: name, variant, file count, tags, sanitize warnings.
 
 ### 3. Sanitize Review
 
@@ -64,14 +64,15 @@ Show the user: action (published/updated/forked), ID, file count.
 
 ## Environment Variables
 
-- `SUPABASE_URL` — Supabase project URL
-- `SUPABASE_ANON_KEY` — Anon key (publish goes through server-side RPC, no service key needed)
-- `PUBLISHER_KEY` — Auto-generated on first publish. Binds your author name to a UUID key. If lost, ask registry admin to reset.
+No env vars needed for normal use. Public registry and publisher identity are auto-managed.
+
+- `SUPABASE_URL` — Override to use a private registry
+- `SUPABASE_ANON_KEY` — Override to use a private registry
 
 ## Publisher Identity
 
-Each author has a unique `PUBLISHER_KEY` (UUID) stored in the `publishers` table. This prevents author impersonation.
+Each author has a unique publisher key (UUID) stored in the `publishers` table. This prevents author impersonation.
 
-- **First publish**: If `PUBLISHER_KEY` is not set, `register_publisher` RPC auto-creates one and saves it to `.env`.
-- **Subsequent publishes**: The key is loaded from `.env` and validated server-side against the claimed author.
+- **First publish**: Auto-registers and saves the key to `.publisher_key` in the skill directory.
+- **Subsequent publishes**: The key is loaded from `.publisher_key` and validated server-side against the claimed author.
 - **Key lost**: Admin runs `reset_publisher_key` RPC (requires service key) to issue a new key. Old key is immediately invalidated.

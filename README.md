@@ -53,16 +53,6 @@ uv run python .claude/skills/skill-dev/scripts/publish.py --skill-name my-skill
 uv run python .claude/skills/skill-dev/scripts/publish.py --skill-name my-skill --yes
 ```
 
-### (Optional) Semantic search
-
-Full-text search works out of the box. For vector similarity search, set any one of these:
-
-```bash
-export DASHSCOPE_API_KEY=...   # Alibaba Cloud
-export SILICONFLOW_API_KEY=... # SiliconFlow (free tier)
-export OPENAI_API_KEY=...      # OpenAI
-```
-
 ### (Advanced) Private registry
 
 To run a separate registry for your team:
@@ -127,15 +117,14 @@ Publishes a local skill to the registry. **Defaults to preview mode** — requir
 --yes                Actually publish (without this, only preview is shown)
 ```
 
-Features: YAML frontmatter parsing, file_tree collection, depends_on extraction, sanitization checks, embedding generation, upsert logic (update own / fork others), fork counter increment.
+Features: YAML frontmatter parsing, file_tree collection, depends_on extraction, sanitization checks, upsert logic (update own / fork others), fork counter increment.
 
 ### search.py
 
 Searches the registry.
 
 ```
---query KEYWORDS     Search (auto-uses semantic search when an embedding key is configured)
---no-semantic        Force full-text only (skip vector similarity)
+--query KEYWORDS     Full-text search
 --tag TAG            Filter by tag
 --sort ORDER         Sort by: installs (default), updated, name
 --limit N            Max results (default: 10)
@@ -144,8 +133,6 @@ Searches the registry.
 --list-all           List everything
 --include-unaudited  Include skills that haven't passed security audit
 ```
-
-Semantic search is auto-enabled when any embedding API key is configured (`DASHSCOPE_API_KEY`, `SILICONFLOW_API_KEY`, or `OPENAI_API_KEY`). Without a key, search falls back to full-text — still works fine.
 
 ### install.py
 
@@ -216,7 +203,7 @@ Agent <-> skill-dev (SKILL.md + scripts/)
               |
          Supabase (PostgreSQL)
               |
-         skills table + pgvector embeddings
+         skills table + full-text search
 ```
 
 All complex decisions (which variant to pick, how to merge, quality assessment) are made by the agent. Infrastructure just stores and queries.

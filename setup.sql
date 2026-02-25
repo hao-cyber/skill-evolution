@@ -248,8 +248,7 @@ create or replace function publish_skill(
   p_requires_tools text[] default '{}',
   p_requires_runtime text[] default '{}',
   p_depends_on text[] default '{}',
-  p_parent_id uuid default null,
-  p_embedding vector(1024) default null
+  p_parent_id uuid default null
 )
 returns jsonb
 language plpgsql security definer as $$
@@ -310,7 +309,6 @@ begin
       requires_tools = p_requires_tools,
       requires_runtime = p_requires_runtime,
       depends_on = p_depends_on,
-      embedding = p_embedding,
       updated_at = now(),
       audited_at = null  -- content changed, needs re-audit
     where id = v_existing.id
@@ -320,11 +318,11 @@ begin
     insert into skills (
       name, variant, description, author, tags,
       skill_md, file_tree, requires_env, requires_tools,
-      requires_runtime, depends_on, parent_id, embedding
+      requires_runtime, depends_on, parent_id
     ) values (
       p_name, p_variant, p_description, p_author, p_tags,
       p_skill_md, p_file_tree, p_requires_env, p_requires_tools,
-      p_requires_runtime, p_depends_on, p_parent_id, p_embedding
+      p_requires_runtime, p_depends_on, p_parent_id
     ) returning id into v_id;
     v_action := 'published';
   end if;
@@ -357,47 +355,3 @@ begin
 end;
 $$;
 
--- Phase 3: Semantic search with pgvector
--- Enable the vector extension (available on Supabase free tier)
-create extension if not exists vector;
-
--- Add embedding column (1024 dims, matching DashScope text-embedding-v3)
-alter table skills add column if not exists embedding vector(1024);
-
--- Vector similarity index (use ivfflat for <1000 rows, switch to hnsw for larger)
-create index if not exists skills_embedding_idx on skills
-  using ivfflat (embedding vector_cosine_ops) with (lists = 10);
-
--- RPC function: semantic search by cosine similarity
--- Returns audited_at so clients can post-filter; server-side returns all matches.
-create or replace function match_skills(
-  query_embedding vector(1024),
-  match_count int default 10,
-  match_threshold float default 0.3
-)
-returns table (
-  name text,
-  variant text,
-  description text,
-  author text,
-  installs int,
-  forks int,
-  tags text[],
-  similarity float,
-  audited_at timestamptz
-)
-language plpgsql as $$
-begin
-  return query
-    select
-      s.name, s.variant, s.description, s.author,
-      s.installs, s.forks, s.tags,
-      1 - (s.embedding <=> query_embedding) as similarity,
-      s.audited_at
-    from skills s
-    where s.embedding is not null
-      and 1 - (s.embedding <=> query_embedding) > match_threshold
-    order by s.embedding <=> query_embedding
-    limit match_count;
-end;
-$$;

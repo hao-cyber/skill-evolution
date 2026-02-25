@@ -8,6 +8,18 @@ Not another skill marketplace. This is the engine that makes skills on *any* mar
 
 不是又一个技能市场，而是让任何市场上的技能都能学习和进化的引擎。
 
+> **⚠️ This is NOT a human-facing app. There's no UI, no sign-up, no login.**
+>
+> This is a skill for [Claude Code](https://claude.ai/code) (an AI coding agent). You give it a GitHub link, the AI clones it, and it works. The "user" is the AI, not you.
+>
+> **⚠️ 这不是给人操作的应用。没有界面、没有注册、没有登录。**
+>
+> 这是给 [Claude Code](https://claude.ai/code)（AI 编程 agent）用的技能。你把这个 GitHub 链接丢给 Claude Code，AI 自己会 clone 安装。使用者是 AI，不是你。
+>
+> **How to use | 怎么用：** Open Claude Code → paste the GitHub URL of this repo → AI handles the rest.
+>
+> **怎么用：** 打开 Claude Code → 把这个仓库的 GitHub 链接丢给它 → AI 自己搞定。
+
 ## Prerequisites | 前置条件
 
 - [Claude Code](https://claude.ai/code) (or any AI coding agent that supports `.claude/skills/`)

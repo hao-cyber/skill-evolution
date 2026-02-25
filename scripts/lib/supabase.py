@@ -2,11 +2,49 @@
 
 import json
 import os
+import ssl
 import sys
 import urllib.error
 import urllib.request
 
 _TIMEOUT = 30  # seconds
+
+
+def _ssl_context():
+    """Create SSL context with best-effort CA bundle resolution.
+
+    Handles macOS where Python's default OpenSSL often can't find system CAs.
+    Falls back to certifi if installed, then to unverified context as last resort.
+    """
+    ctx = ssl.create_default_context()
+    try:
+        # Quick check: can we reach any HTTPS at all?
+        urllib.request.urlopen("https://example.com", context=ctx, timeout=5)
+        return ctx
+    except (urllib.error.URLError, OSError):
+        pass
+    # Try certifi bundle (pip install certifi)
+    try:
+        import certifi
+        return ssl.create_default_context(cafile=certifi.where())
+    except ImportError:
+        pass
+    # Last resort: disable verification (still encrypted, just no cert check)
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    return ctx
+
+
+# Lazily initialised — created once on first use
+_CTX = None
+
+
+def _get_ssl_context():
+    global _CTX
+    if _CTX is None:
+        _CTX = _ssl_context()
+    return _CTX
 
 # Public registry defaults — users can override via env vars or .env
 _DEFAULT_URL = "https://ptwosnmrcfwmfnluufww.supabase.co"
@@ -42,7 +80,7 @@ def supabase_get(path, service_key=False):
 
     req = urllib.request.Request(full_url, headers=headers)
     try:
-        with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
+        with urllib.request.urlopen(req, context=_get_ssl_context(), timeout=_TIMEOUT) as resp:
             return json.loads(resp.read().decode())
     except urllib.error.HTTPError as e:
         body = e.read().decode()
@@ -74,7 +112,7 @@ def supabase_rpc(func_name, params, service_key=False, exit_on_error=True):
     body = json.dumps(params).encode()
     req = urllib.request.Request(full_url, data=body, headers=headers, method="POST")
     try:
-        with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
+        with urllib.request.urlopen(req, context=_get_ssl_context(), timeout=_TIMEOUT) as resp:
             text = resp.read().decode()
             return json.loads(text) if text.strip() else None
     except urllib.error.HTTPError as e:

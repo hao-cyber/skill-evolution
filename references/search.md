@@ -73,3 +73,14 @@ Show: installed path, file count, any warnings.
 
 - `SUPABASE_URL` — Supabase project URL
 - `SUPABASE_ANON_KEY` — Anon key (public read access, no auth needed)
+
+### Embedding (optional — enables semantic search)
+
+Set any ONE of these keys to auto-enable semantic search on `--query`:
+
+- `DASHSCOPE_API_KEY` — DashScope text-embedding-v3
+- `SILICONFLOW_API_KEY` — SiliconFlow BAAI/bge-m3 (free model)
+- `OPENAI_API_KEY` — OpenAI or any compatible API (set `EMBEDDING_BASE_URL` to override endpoint)
+
+Without a key, search uses full-text search only (still works fine).
+Use `--no-semantic` to force full-text even when a key is available.

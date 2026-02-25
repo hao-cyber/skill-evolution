@@ -36,6 +36,7 @@ _PROVIDERS = [
         "payload": lambda text: {
             "model": "BAAI/bge-m3",
             "input": text,
+            "dimensions": 1024,
         },
     },
     {
@@ -57,7 +58,8 @@ def _detect_provider():
         api_key = os.environ.get(p["env_key"], "")
         if not api_key:
             continue
-        url = os.environ.get(p.get("url_env", ""), "") or p["url"]
+        url_env = p.get("url_env")
+        url = (os.environ.get(url_env, "") if url_env else "") or p["url"]
         return api_key, url, p["payload"]
     return None
 

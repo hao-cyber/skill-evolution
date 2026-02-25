@@ -82,7 +82,7 @@ def semantic_search(query, limit=10, audited_only=True, tag=None):
     - No embedding provider is configured
     - The embedding API call fails
     - The Supabase RPC call fails
-    - Top result similarity is below 0.5 (likely incomplete embeddings in DB)
+    - Top result similarity is below 0.6 (likely incomplete embeddings in DB)
     """
     embedding = compute_embedding(query)
     if not embedding:

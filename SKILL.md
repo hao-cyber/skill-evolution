@@ -29,7 +29,7 @@ Match specificity to the task's fragility:
 - **评测 skill prompt** (eval、跑回归、检查 prompt 改动效果) → 读取 `references/eval-mode.md`
 - **Checking skill maturity** (after reflect, after successful runs, "成熟了吗", "该发布了吗") → 读取 `references/maturity.md`
 
-**Registry lifecycle (requires Supabase):**
+**Registry lifecycle (public registry built-in, works out of the box):**
 - **Publishing a skill** ("publish", "发布 skill", "开源这个 skill") → 读取 `references/publish.md`
 - **Searching/installing** ("search skill", "有没有XX的skill", "安装 skill") → 读取 `references/search.md`
 - **Reviewing a skill** ("review", "评价 skill", "打分") → use `scripts/review.py`

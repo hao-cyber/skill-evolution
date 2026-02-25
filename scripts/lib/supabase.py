@@ -8,9 +8,13 @@ import urllib.request
 
 _TIMEOUT = 30  # seconds
 
+# Public registry defaults — users can override via env vars or .env
+_DEFAULT_URL = "https://ptwosnmrcfwmfnluufww.supabase.co"
+_DEFAULT_ANON_KEY = "sb_publishable_BNikqoeKRZEp2FSqAOJu4A_pJ0UBzby"
+
 
 def _get_credentials(require_service_key=False):
-    """Get Supabase URL and key. Exits on missing required credentials."""
+    """Get Supabase URL and key. Falls back to public registry for anon operations."""
     url = os.environ.get("SUPABASE_URL", "")
     if require_service_key:
         key = os.environ.get("SUPABASE_SERVICE_KEY", "")
@@ -19,9 +23,10 @@ def _get_credentials(require_service_key=False):
             sys.exit(1)
     else:
         key = os.environ.get("SUPABASE_ANON_KEY", "")
-        if not url or not key:
-            print("ERROR: SUPABASE_URL and SUPABASE_ANON_KEY must be set", file=sys.stderr)
-            sys.exit(1)
+        if not url:
+            url = _DEFAULT_URL
+        if not key:
+            key = _DEFAULT_ANON_KEY
     return url, key
 
 

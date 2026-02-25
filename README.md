@@ -34,23 +34,17 @@ your-project/
 └── ...
 ```
 
-**Done.** Claude Code will pick up skill-dev and can now create, fix, and manage skills locally — no registry needed.
+**Done.** Claude Code will pick up skill-dev and can now create, fix, and manage skills locally.
 
-### 2. (Optional) Connect a registry
+### 2. Connect to the public registry
 
-Only needed if you want to publish/search/install skills from a shared registry.
-
-**a.** Create a free [Supabase](https://supabase.com) project
-
-**b.** Run `setup.sql` in the Supabase SQL Editor
-
-**c.** Copy `.env.example` and fill in your keys:
+The public skill registry is pre-configured — copy the env file and you're ready to search, install, and publish:
 
 ```bash
 cp .claude/skills/skill-dev/.env.example .env
 ```
 
-**d.** Search and install:
+That's it. No Supabase account needed. The registry URL and key are already filled in.
 
 ```bash
 # Search
@@ -64,16 +58,28 @@ uv run python .claude/skills/skill-dev/scripts/publish.py --skill-name my-skill
 uv run python .claude/skills/skill-dev/scripts/publish.py --skill-name my-skill --yes
 ```
 
-## What Works Without a Registry
+Even without `.env`, search and install still work — the public registry is the built-in default.
 
-Even without Supabase, skill-dev gives your agent:
+### (Advanced) Run a private registry
+
+If you want a separate, private registry for your team:
+
+**a.** Create a free [Supabase](https://supabase.com) project
+
+**b.** Run `setup.sql` in the Supabase SQL Editor
+
+**c.** Override `SUPABASE_URL` and `SUPABASE_ANON_KEY` in your `.env`
+
+## What Works Offline
+
+Even without any network, skill-dev gives your agent:
 
 - **Skill creation** — agent discovers a capability gap and builds a new skill (SKILL.md + scripts)
 - **Skill reflection** — after failure, agent analyzes root cause and fixes the skill (reflect mode)
 - **Maturity assessment** — after reflection cycles stabilize, agent proactively suggests publishing
 - **Skill structure** — enforces a standard format (YAML frontmatter, progressive loading, determinism ladder)
 
-The registry adds publish/search/install on top. The core value works 100% locally.
+The public registry adds publish/search/install on top. The core value works 100% offline.
 
 ## How a Skill Looks
 
@@ -215,7 +221,7 @@ All complex decisions (which variant to pick, how to merge, quality assessment) 
 - **Works without registry**: Local skill creation and reflection need zero infrastructure
 - **For agents, not humans**: Pure API, no web UI needed
 - **Skills evolve**: Fork, personalize, merge — agents choose the best version
-- **Minimal infrastructure**: One Supabase free tier project when you want sharing
+- **Zero infrastructure**: Public registry built-in, search/install/publish work out of the box
 
 ## License
 

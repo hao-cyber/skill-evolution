@@ -162,12 +162,17 @@ def ensure_publisher_key(author):
     try:
         if env_file.exists():
             content = env_file.read_text()
-            if "PUBLISHER_KEY=" not in content:
+            # Check for an uncommented, non-empty PUBLISHER_KEY line
+            has_active_key = any(
+                line.strip().startswith("PUBLISHER_KEY=") and line.strip() != "PUBLISHER_KEY="
+                for line in content.splitlines()
+            )
+            if not has_active_key:
                 with open(env_file, "a") as f:
-                    f.write(f"\n# Auto-registered publisher identity\nPUBLISHER_KEY={new_key}\n")
+                    f.write(f"\nPUBLISHER_KEY={new_key}\n")
         else:
             with open(env_file, "w") as f:
-                f.write(f"# Auto-registered publisher identity\nPUBLISHER_KEY={new_key}\n")
+                f.write(f"PUBLISHER_KEY={new_key}\n")
         print(f"Auto-registered publisher key for author '{author}' → saved to {env_file}", file=sys.stderr)
     except OSError as e:
         print(f"WARNING: could not save key to {env_file}: {e}", file=sys.stderr)

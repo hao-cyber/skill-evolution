@@ -7,19 +7,28 @@ description: "Skill 全生命周期管理：创建 → 反思优化 → 评测 �
 
 Full lifecycle management for AI agent skills: create, reflect, evaluate, publish, search, install, merge, review, and uninstall.
 
+## Lifecycle Flow
+
+Each stage has a validation gate before advancing to the next:
+
+1. **Create** → verify triggers fire correctly and scripts run (`--help` smoke test)
+2. **Use** → observe real executions for failure signals
+3. **Reflect** → after failures or user corrections, identify root cause and patch
+4. **Evaluate** → run regression tests to confirm fixes don't break other cases
+5. **Maturity check** → confirm publish readiness (3+ successful runs, no recent reflects)
+6. **Publish** → push to registry: `python3 scripts/publish.py .claude/skills/<name>/`
+
+Fail any gate → loop back. Example: reflect fix at step 3 requires re-evaluation at step 4 before proceeding to step 5.
+
 ## Core Principles
-
-### Concise is Key
-
-The context window is a shared resource. Only add context Claude doesn't already have. Challenge each piece: "Does Claude really need this?" Prefer concise examples over verbose explanations.
 
 ### Degrees of Freedom
 
 Match specificity to the task's fragility:
 
-- **High freedom** (text instructions): Multiple approaches valid, context-dependent decisions
-- **Medium freedom** (pseudocode/scripts with params): Preferred pattern exists, some variation OK
-- **Low freedom** (specific scripts): Operations fragile, consistency critical, exact sequence required
+- **High freedom** (text instructions): "Choose an appropriate error message" — multiple valid answers
+- **Medium freedom** (pseudocode with params): "Format errors as `ERROR: {context} — {detail}`" — pattern fixed, content varies
+- **Low freedom** (exact scripts): `sys.exit(1)` on failure — no variation allowed
 
 ## Routing
 
@@ -35,6 +44,23 @@ Match specificity to the task's fragility:
 - **Reviewing a skill** ("review", "评价 skill", "打分") → use `scripts/review.py`
 - **Merging skill variants** ("merge", "合并版本", "融合") → 读取 `references/merge.md`
 - **Uninstalling a skill** ("uninstall", "删除 skill", "卸载") → use `scripts/uninstall.py --name <skill> --yes`
+
+### Quick Example: Reflect → Evaluate → Publish
+
+```bash
+# 1. Reflect — skill failed on "create a meeting" (routed to doc-writer instead of calendar)
+#    Fix: narrow trigger in SKILL.md description, add negative example
+grep -rl "create" .claude/skills/ | head -5  # impact scan: find colliding triggers
+
+# 2. Evaluate — verify the fix didn't break other cases
+python3 .claude/skills/prompt-eval/scripts/run_eval.py \
+  --prompts /tmp/skill-system-prompt.md \
+  --tests .claude/skills/doc-writer/evals.yaml \
+  --task-id reflect-fix-001 --output-dir /tmp/eval-out
+
+# 3. Publish — all tests pass + 3 successful runs + no recent reflects
+python3 scripts/publish.py .claude/skills/doc-writer/
+```
 
 ## When NOT to Create a Skill
 
@@ -59,8 +85,7 @@ Tool design matters more than prompt design. When a skill has `scripts/`, invest
 
 ## Writing Guidelines
 
-- **Do** include: non-obvious procedures, domain specifics, gotchas from real failures
-- **Don't** include: things Claude already knows, verbose explanations, auxiliary docs
-- **Keep** SKILL.md ≤150 lines (routing layer); move scenario details to references/
-- **Challenge each line**: "Would removing this cause Claude to make mistakes?" If not, cut it.
-- **Prefer examples over explanations**: One concrete pair teaches more than a paragraph
+- **Include**: non-obvious procedures, domain specifics, gotchas from real failures
+- **Exclude**: things Claude already knows, verbose explanations, auxiliary docs
+- **Size**: SKILL.md ≤150 lines; move scenario details to `references/`
+- **Litmus test**: "Would removing this line cause Claude to make mistakes?" If not, cut it
